@@ -22,15 +22,15 @@ foreach($players as $i){
 create_round(2);
 
 $questions_2 = ['Nenne eine beliebte Farbe für Ostereier',
-'2. Nenne eine Tätigkeit im Schnee außer Ski alpin/Snowboarden',
-'3. Nenne einen beliebten Weihnachtsmarkt',
-'4. Nenne eine fiktionale Figur im Zusammenhang mit Weihnachten/Geschichte über Weihnachten',
-'5. Nenne einen Film der im Dezember immer im Fernsehen läuft',
-'6. Nenne ein typisches Silvestergericht',
-'7. Nenne eine Nuss, die vor allem in der Vorweihnachtszeit gegessen wird',
-'8. Nenne einen Gletscher in Österreich',
-'9. Nenne eine beliebte Tätigkeit im Frühjahr',
-'10. Nenne eine typische Veranstaltung im Mai'];
+'Nenne eine Tätigkeit im Schnee außer Ski alpin/Snowboarden',
+'Nenne einen beliebten Weihnachtsmarkt',
+'Nenne eine fiktionale Figur im Zusammenhang mit Weihnachten/Geschichte über Weihnachten',
+'Nenne einen Film der im Dezember immer im Fernsehen läuft',
+'Nenne ein typisches Silvestergericht',
+'Nenne eine Nuss, die vor allem in der Vorweihnachtszeit gegessen wird',
+'Nenne einen Gletscher in Österreich',
+'Nenne eine beliebte Tätigkeit im Frühjahr',
+'Nenne eine typische Veranstaltung im Mai'];
 
 $nr = 1;
 foreach($questions_2 as $i){
