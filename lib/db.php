@@ -235,7 +235,14 @@ function get_first_player(){
 function html_output_round_answers_points($nr){
 	// table with round - question - answer - points for Answer
 	$query = "SELECT DISTINCT round, question_id AS question, answer_value AS answer, points
-	 FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+	 FROM (SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+			iwsAnswers.id AS answers_id,
+			iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
+			iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
+		 FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
+		 ) AS bigtable 
+		 JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
 	 WHERE round = " . mysql_real_escape_string($nr) . "
 	 ORDER BY question_id, player_id;";
 	 
@@ -313,7 +320,14 @@ function html_output_list_of_players($selected_player){
 function html_output_round_player_points($nr){
 	// table with round - player - points
 	$query = "SELECT round, player_name, sum(points) AS sum_points
-		FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+		FROM (SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+				iwsAnswers.id AS answers_id,
+				iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
+				iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
+			FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+				JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
+			) AS bigtable 
+			JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
 		WHERE round = " . mysql_real_escape_string($nr) . "
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
@@ -340,7 +354,14 @@ function html_output_round_player_points($nr){
 function html_output_sum_of_all_points(){
 	// table with round - player - points
 	$query = "SELECT player_name, sum(points) AS sum_points
-		FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+		FROM (SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+				iwsAnswers.id AS answers_id,
+				iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
+				iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
+			FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+				JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
+			) AS bigtable 
+			JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
 	
@@ -365,7 +386,14 @@ function html_output_sum_of_all_points(){
 function html_output_get_round($nr){
 	// table with round - question - player - answer - points per Answer
 	$query = "SELECT round, question_value AS question, player_name AS player, answer_value AS answer, points
-	 FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+	 FROM (SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+			iwsAnswers.id AS answers_id,
+			iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
+			iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
+		 FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
+		 ) AS bigtable 
+		 JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
 	 WHERE round = " . mysql_real_escape_string($nr) . "
 	 ORDER BY question_id, player_id;";
 	 
@@ -424,7 +452,14 @@ function html_output_get_round_points($nr){
 function html_output_get_all_rounds(){
 	// table with round - question - player - answer - points per Answer
 	$query = "SELECT round, question_value AS question, player_name AS player, answer_value AS answer, points
-	 FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+	 FROM (SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+			iwsAnswers.id AS answers_id,
+			iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
+			iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
+		 FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
+		 ) AS bigtable 
+		 JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
 	 ORDER BY round, question_id;";
 	 
 	 $result = mysql_query($query) or die("html_output_get_all_rounds: Anfrage fehlgeschlagen: " . mysql_error());

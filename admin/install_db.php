@@ -24,17 +24,18 @@ $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error())
 echo " done.<br/>\n";
 
 // ggf. alte Views löschen
-echo "Drop existing Views if exist...";
+// noview
+/*echo "Drop existing Views if exist...";
 $query = "DROP VIEW IF EXISTS 
 		bigtable,
 		points_per_answer;";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
-echo " done.<br/>\n";
+echo " done.<br/>\n";*/
 
 
 
 // Tabellen anlegen
-echo "Creating tables and views<br/>\n";
+echo "Creating tables<br/>\n";
 echo "- Create table iwsPlayer<br/>\n";
 $query = "CREATE TABLE iwsPlayers ( 
 		id 		int AUTO_INCREMENT, 
@@ -91,7 +92,8 @@ $query = "CREATE TABLE iwsAnswers (
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
 // Views anlegen
-echo "- Create view points_per_answer<br/>\n";
+// noview
+/*echo "- Create view points_per_answer<br/>\n";
 $query = "CREATE VIEW points_per_answer AS (
 		SELECT iwsAnswers.answer AS answer_id, COUNT(iwsAnswers.player) AS points
 		FROM iwsAnswers
@@ -108,8 +110,8 @@ $query = "CREATE VIEW bigtable AS (
 		FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
 			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
-echo "Creating tables and views done.<br/>\n";
+$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());*/
+echo "Creating tables done.<br/>\n";
 
 // Datenbankverbindung trennen
 echo "Closing connection<br/><br/>\n";
