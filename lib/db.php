@@ -232,6 +232,33 @@ function get_first_player(){
 
 // HTML stuff
 
+function html_output_round_answers_points($nr){
+	// table with round - question - answer - points for Answer
+	$query = "SELECT DISTINCT round, question_id AS question, answer_value AS answer, points
+	 FROM bigtable JOIN points_per_answer ON points_per_answer.answer_id = bigtable.answer_id
+	 WHERE round = " . mysql_real_escape_string($nr) . "
+	 ORDER BY question_id, player_id;";
+	 
+	 $result = mysql_query($query) or die("html_output_get_round: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo "<table border='1'>\n";
+	echo "<tr>\n\t<th>Round</th>\n\t<th>Question</th>\n\t<th>Answer</th>\n\t<th>Points</th>\n</tr>\n\n";
+	
+	while($row = mysql_fetch_array($result)){
+		$round	= $row['round'];
+		$question	= $row['question'];
+		$answer	= $row['answer'];
+		$points	= $row['points'];
+		
+		echo "<tr>\n\t<td>" . $round . "</td>\n\t<td>" . $question . "</td>\n\t<td>" . $answer . "</td>\n\t<td>" . $points . "</td>\n</tr>\n\n";
+	}
+	echo "</table>\n";
+	
+	mysql_free_result($result);
+}
+
 function html_output_round_questions_answers_by_user($round, $user){
 	$query = "SELECT iwsQuestion.round AS round,  iwsQuestion.number AS number, iwsQuestion.value as question, answer
 		FROM (SELECT iwsAnswer.value AS answer, iwsQuestion.id AS question_id

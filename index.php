@@ -120,6 +120,11 @@
 		<?php html_output_get_round($round); ?>
 	</div>
 	
+	<div id="points_for_answers_current_round">
+		Punkte für Antworten der aktuellen Runde
+		<?php html_output_round_answers_points($round); ?>
+	</div>
+	
 	<div id="points_current_round">
 		Punktestand aktuelle Runde
 		<?php html_output_round_player_points($round); ?>
