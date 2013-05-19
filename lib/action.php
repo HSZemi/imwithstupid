@@ -1,6 +1,7 @@
  <?php
  
 include 'db.php';
+include 'html.php';
 $action = $_POST["action"];
 $round = $_POST["round"];
 $player = $_POST["player"];
