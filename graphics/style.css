@@ -27,3 +27,35 @@ div {
 	padding: 5px;
 	float:left;
     } 
+    
+div.tabcontent {
+	display: none;
+}
+
+button {
+	font-size: 14pt;
+}
+
+select {
+	font-size: 14pt;
+}
+
+#show_player_management {
+	color: white;
+	background-color: #008888;
+}
+
+#show_enter_results {
+	color: white;
+	background-color: #bb6666;
+}
+
+#show_add_question {
+	color: white;
+	background-color: #bbbb00;
+}
+
+#show_results {
+	color: white;
+	background-color: #22aa33;
+}

@@ -6,19 +6,16 @@
 
   </head>
   <body>
-  <div id="servermessages">
+  
+    <div id="servermessages">
 	<?php include 'lib/action.php' ?>
-  </div>
+    </div>
+    
+      <p style="clear:both"></p>
   
-  <?php $link = db_connect(); ?>
+    <?php $link = db_connect(); ?>
   
-  <p style="clear:both"></p>
-  
-  
-  <div id="enter_results">
-	<h1>Eingabe von Ergebnissen | RUNDE <?php echo $round; ?></h1><br/>
-	
-	<div>
+  <div id=round_management>
 	<form action="index.php" name="load_round" method="post">
 		Runde: <select name="round" size="1">
 			<?php 
@@ -39,11 +36,26 @@
 				mysql_free_result($result);
 			?>
 		</select>
-		<input type="hidden" name="player" value="<?php echo $player; ?>"><br />
-		<button name="action" value="load_round" type="submit">Runde laden</button><br/>
-		<button name="action" value="new_round" type="submit"><?php echo "nächste Runde <br/>starten (" . (get_max_round()+1) . ")" ?></button>
+		<input type="hidden" name="player" value="<?php echo $player; ?>">
+		<button name="action" value="load_round" type="submit">Runde laden</button>
+		<button name="action" value="new_round" type="submit"><?php echo "nächste Runde starten (" . (get_max_round()+1) . ")" ?></button>
 	</form>
 	</div>
+	
+	<p style="clear:both"></p>
+  
+  <div id="tabrow">
+	<button id="show_player_management">Spieler verwalten</button> 
+	<button id="show_enter_results">Ergebnisse eingeben</button> 
+	<button id="show_add_question">Frage hinzufügen</button> 
+	<button id="show_results">Auswertung</button>
+  </div>
+  
+  <p style="clear:both"></p>
+  
+  
+  <div class="tabcontent" id="enter_results">
+	<h1>Eingabe von Ergebnissen | RUNDE <?php echo $round; ?></h1><br/>
 	
 	<div>
 	<form action="index.php" name="load_user_round" method="post">
@@ -69,9 +81,7 @@
 	
   </div>
   
-  <p style="clear:both;"> </p>
-  
-  <div id="player_management">
+  <div class="tabcontent" id="player_management">
   <h1>Spielerverwaltung</h1>
   
 	<form action="index.php" name="add_player" method="post" style="float:left; border-right:5px groove #aaa;">
@@ -98,8 +108,8 @@
 	</form>
   </div>
   
-  <div id="add_question">
-	<h1>Frage zu aktueller Runde Hinzufügen</h1>
+  <div class="tabcontent" id="add_question">
+	<h1>Frage zu aktueller Runde hinzufügen</h1>
 	<form action="index.php" name="add_question" method="post">
 		<?php echo "Runde " . $round . ", Frage " . (get_max_question_of_round($round)+1) ?>:
 		<input name="questiontext" type="text" size="50" maxlength="100">
@@ -109,9 +119,7 @@
 	</form>
   </div>
   
-  <p style="clear:both;"> </p>
-  
-  <div id="results">
+  <div class="tabcontent" id="results">
   
 	<h1>Punktestand</h1>
 	
@@ -139,6 +147,37 @@
 	
 	
   </div>
+  
+  
+  
+  <script type=text/javascript>
+	document.getElementById("enter_results").style.display = 'block';
+	
+	document.getElementById("show_enter_results").onclick = function () { 
+		document.getElementById("enter_results").style.display = 'block';
+		document.getElementById("player_management").style.display = 'none';
+		document.getElementById("add_question").style.display = 'none';
+		document.getElementById("results").style.display = 'none';
+	}
+	document.getElementById("show_player_management").onclick = function () { 
+		document.getElementById("enter_results").style.display = 'none';
+		document.getElementById("player_management").style.display = 'block';
+		document.getElementById("add_question").style.display = 'none';
+		document.getElementById("results").style.display = 'none';
+	}
+	document.getElementById("show_add_question").onclick = function () { 
+		document.getElementById("enter_results").style.display = 'none';
+		document.getElementById("player_management").style.display = 'none';
+		document.getElementById("add_question").style.display = 'block';
+		document.getElementById("results").style.display = 'none';
+	}
+	document.getElementById("show_results").onclick = function () { 
+		document.getElementById("enter_results").style.display = 'none';
+		document.getElementById("player_management").style.display = 'none';
+		document.getElementById("add_question").style.display = 'none';
+		document.getElementById("results").style.display = 'block';
+	}
+  </script>
   
   
 	
