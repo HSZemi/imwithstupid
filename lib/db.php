@@ -24,9 +24,13 @@ function db_close($link){
 	mysql_close($link);
 }
 
+function validate_string_for_mysql_html($string){
+	return mysql_real_escape_string(htmlspecialchars($string, ENT_QUOTES | ENT_HTML401));
+}
+
 
 function create_player($name){
-	$query = "INSERT INTO iwsPlayers(name) VALUES ('" . mysql_real_escape_string($name) . "');";
+	$query = "INSERT INTO iwsPlayers(name) VALUES ('" . validate_string_for_mysql_html($name) . "');";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "create_player: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -34,7 +38,7 @@ function create_player($name){
 }
 
 function remove_player($name){
-	$query = "DELETE FROM iwsPlayers WHERE name LIKE '" . mysql_real_escape_string($name) . "';";
+	$query = "DELETE FROM iwsPlayers WHERE name LIKE '" . validate_string_for_mysql_html($name) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "remove_player: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -53,7 +57,7 @@ function create_question($round, $number, $value){
 	$query = "INSERT INTO iwsQuestion(round, number, value) VALUES (" 
 		. mysql_real_escape_string($round) . ", " 
 		. mysql_real_escape_string($number) . ", '" 
-		. mysql_real_escape_string($value) . "');";
+		. validate_string_for_mysql_html($value) . "');";
 	
 	$result = mysql_query($query);
 	if(!$result){
@@ -63,7 +67,7 @@ function create_question($round, $number, $value){
 
 function create_answer($question_string, $value){
 	// find question id
-	$query = "SELECT id FROM iwsQuestion WHERE value LIKE '" .  mysql_real_escape_string($question_string) . "';";
+	$query = "SELECT id FROM iwsQuestion WHERE value LIKE '" .  validate_string_for_mysql_html($question_string) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "create_answer: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -80,7 +84,7 @@ function create_answer_number($question_id, $value){
 	
 	$query = "INSERT INTO iwsAnswer(question, value) VALUES ('" 
 		. mysql_real_escape_string($question_id) . "', '"
-		. mysql_real_escape_string($value) . "');";
+		. validate_string_for_mysql_html($value) . "');";
 	
 	$result = mysql_query($query);
 	if(!$result){
@@ -93,7 +97,7 @@ function add_answer_string($player, $question, $answer){
 	if($answer == "") return;
 	
 	// find player id
-	$query = "SELECT id FROM iwsPlayers WHERE name LIKE '" .  mysql_real_escape_string($player) . "';";
+	$query = "SELECT id FROM iwsPlayers WHERE name LIKE '" .  validate_string_for_mysql_html($player) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_string: Anfrage 1 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -103,7 +107,7 @@ function add_answer_string($player, $question, $answer){
 	mysql_free_result($result);
 	
 	// find question id
-	$query = "SELECT id FROM iwsQuestion WHERE value LIKE '" .  mysql_real_escape_string($question) . "';";
+	$query = "SELECT id FROM iwsQuestion WHERE value LIKE '" .  validate_string_for_mysql_html($question) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_string: Anfrage 2 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -114,7 +118,7 @@ function add_answer_string($player, $question, $answer){
 	
 	
 	// find answer id
-	$query = "SELECT id FROM iwsAnswer WHERE question = " . mysql_real_escape_string($question_id["id"]) . " AND value LIKE '" .  mysql_real_escape_string($answer) . "';";
+	$query = "SELECT id FROM iwsAnswer WHERE question = " . mysql_real_escape_string($question_id["id"]) . " AND value LIKE '" .  validate_string_for_mysql_html($answer) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_string: Anfrage 3 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -140,7 +144,7 @@ function add_answer_number($player, $round, $question, $answer){
 	if($answer == "") return;
 	
 	// find player id
-	$query = "SELECT id FROM iwsPlayers WHERE name LIKE '" .  mysql_real_escape_string($player) . "';";
+	$query = "SELECT id FROM iwsPlayers WHERE name LIKE '" .  validate_string_for_mysql_html($player) . "';";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_number: Anfrage 1 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -150,7 +154,7 @@ function add_answer_number($player, $round, $question, $answer){
 	mysql_free_result($result);
 	
 	// find question id
-	$query = "SELECT id FROM iwsQuestion WHERE number = " .  mysql_real_escape_string($question) . " AND round = " .  mysql_real_escape_string($round) . ";";
+	$query = "SELECT id FROM iwsQuestion WHERE number = " .  validate_string_for_mysql_html($question) . " AND round = " .  mysql_real_escape_string($round) . ";";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_number: Anfrage 2 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -162,7 +166,7 @@ function add_answer_number($player, $round, $question, $answer){
 	$counter = 0;
 	do{
 		// find answer id
-		$query = "SELECT id FROM iwsAnswer WHERE question = " . mysql_real_escape_string($question_id["id"]) . " AND value LIKE '" .  mysql_real_escape_string($answer) . "';";
+		$query = "SELECT id FROM iwsAnswer WHERE question = " . mysql_real_escape_string($question_id["id"]) . " AND value LIKE '" .  validate_string_for_mysql_html($answer) . "';";
 		$result = mysql_query($query);
 		if(!$result){
 			echo "add_answer_number: Anfrage 3 fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -184,8 +188,8 @@ function add_answer_number($player, $round, $question, $answer){
 	
 	// remove previous answer(s) of that round
 	$query = "DELETE FROM iwsAnswers
-		WHERE player IN (SELECT id FROM iwsPlayers WHERE name LIKE '"  .  mysql_real_escape_string($player) .  "')
-		AND answer IN (SELECT iwsAnswer.id FROM iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id WHERE iwsQuestion.round = " .  mysql_real_escape_string($round) . " AND iwsQuestion.number = " .  mysql_real_escape_string($question) . ");";
+		WHERE player IN (SELECT id FROM iwsPlayers WHERE name LIKE '"  .  validate_string_for_mysql_html($player) .  "')
+		AND answer IN (SELECT iwsAnswer.id FROM iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id WHERE iwsQuestion.round = " .  mysql_real_escape_string($round) . " AND iwsQuestion.number = " .  validate_string_for_mysql_html($question) . ");";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_answer_number: Anfrage 4 fehlgeschlagen: " . mysql_error() . "<br/>";
