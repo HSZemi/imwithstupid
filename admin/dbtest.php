@@ -6,8 +6,9 @@
 
 <?php
 
-//db-modul importieren
+//db- und html-modul importieren
 include '../lib/db.php';
+include '../lib/html.php';
 
 // mit Datenbank verbinden
 $conn = db_connect();
