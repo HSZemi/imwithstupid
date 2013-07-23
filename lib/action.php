@@ -2,9 +2,14 @@
  
 include 'db.php';
 include 'html.php';
-$action = $_POST["action"];
-$round = $_POST["round"];
-$player = $_POST["player"];
+isset($_POST["action"]) ? $action = $_POST["action"] : $action = '';
+isset($_POST["round"]) ? $round = $_POST["round"] : $round = 0;
+isset($_POST["player"]) ? $player = $_POST["player"] : $player = '';
+isset($_POST["active_tab"]) ? $activetab = $_POST["active_tab"] : $activetab = "#enter_results";
+
+if(isset($_POST["active_tab"]) && $activetab === "#enter_results" && !isset($_POST["action"])){
+	$action = "load_user_round";
+}
 
 $link = db_connect();
 

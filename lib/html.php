@@ -76,7 +76,11 @@ function html_output_round_questions_answers_by_user($round, $user){
 		$question	= $row['question'];
 		$answer	= $row['answer'];
 		
-		echo "<tr>\n\t<td>" . $round . "</td>\n\t<td>" . $number . "</td>\n\t<td>" . $question . "</td>\n\t<td><input name='answer_" . $i . "' type='text' size='50' maxlength='100' value='" . $answer . "'></td>\n</tr>\n\n";
+		echo "<tr>\n\t<td>" . $round . "</td>\n\t<td>" . $number . "</td>\n\t<td>" . $question . '</td>
+		<td><input name="answer_' . $i . '" type="text" size="50" maxlength="100" autocomplete="off" data-provide="typeahead" data-source='."'".'['.get_answers_for($round, $number).']'."'".' value="' . $answer . '" /></td>
+		</tr>
+		
+		';
 		
 		$i++;
 	}
@@ -243,6 +247,107 @@ function html_output_get_all_rounds(){
 	echo "</table>\n";
 	
 	mysql_free_result($result);
+}
+
+function html_list_questions_of_round($round){
+	$query = "SELECT value AS question
+	 FROM iwsQuestion
+	 WHERE round = " . mysql_real_escape_string($round) . "
+	 ORDER BY number ASC;";
+	 
+	 $result = mysql_query($query) or die("html_list_questions_of_round: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo "<ol>\n";
+	
+	while($row = mysql_fetch_array($result)){
+		$question	= $row['question'];
+		
+		echo "<li>".$question."</li>\n";
+	}
+	echo "</ol>\n";
+	
+	mysql_free_result($result);
+}
+
+function html_bbcode_results_current_round($round){
+	$query = "SELECT player_name, sum(points) AS sum_points
+		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+			ON points_per_answer.answer_id = bigtable.answer_id
+		WHERE round = " . mysql_real_escape_string($round) . "
+		GROUP BY player_id
+		ORDER BY sum_points DESC;";
+	
+	$result = mysql_query($query) or die("html_bbcode_results_current_round: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo "<textarea id='text_results_round' class='span3' rows='20'>\n";
+	
+	if($row = mysql_fetch_array($result)){
+		$sum_points	= $row['sum_points'];
+		$rank = 1;
+		$pos = 1;
+		$prev_pts = $sum_points;
+	
+		do{
+			$player_name= $row['player_name'];
+			$sum_points	= $row['sum_points'];
+			
+			if($sum_points < $prev_pts){
+				$rank=$pos;
+			}
+			$pos++;
+			
+			echo $rank . '. ' . $player_name . " - " . $sum_points . "\n";
+			
+			$prev_pts = $sum_points;
+		}while($row = mysql_fetch_array($result));
+	}
+	echo "</textarea>\n";
+	
+	mysql_free_result($result);
+
+}
+
+function html_bbcode_results(){
+	$query = "SELECT player_name, sum(points) AS sum_points
+		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+			ON points_per_answer.answer_id = bigtable.answer_id
+		GROUP BY player_id
+		ORDER BY sum_points DESC;";
+	
+	$result = mysql_query($query) or die("html_bbcode_results: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo "<textarea id='text_results_all' class='span3' rows='20'>\n";
+	
+	if($row = mysql_fetch_array($result)){
+		$sum_points	= $row['sum_points'];
+		$rank = 1;
+		$pos = 1;
+		$prev_pts = $sum_points;
+	
+		do{
+			$player_name= $row['player_name'];
+			$sum_points	= $row['sum_points'];
+			
+			if($sum_points < $prev_pts){
+				$rank=$pos;
+			}
+			$pos++;
+			
+			echo $rank . '. ' . $player_name . " - " . $sum_points . "\n";
+			
+			$prev_pts = $sum_points;
+		}while($row = mysql_fetch_array($result));
+	}
+	echo "</textarea>\n";
+	
+	mysql_free_result($result);
+
 }
 
 ?>

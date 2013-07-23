@@ -245,4 +245,25 @@ function get_first_player(){
 	return $answer["name"];
 }
 
+function get_answers_for($round, $question){
+	$round = intval($round);
+	$question = intval($question);
+	$query = "SELECT DISTINCT iwsAnswer.value AS answer
+		    FROM iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id 
+		    WHERE iwsQuestion.round = ".$round." AND iwsQuestion.number = ".$question.";";
+	$result = mysql_query($query);
+	if(!$result){
+		echo "get_answers_for: Anfrage  fehlgeschlagen: " . mysql_error() . "<br/>";
+	}
+	
+	$retstring = '';
+	while($answer = mysql_fetch_array($result)){
+		$retstring .= ',"'.$answer['answer'].'"';
+	}
+	
+	mysql_free_result($result);
+	
+	return substr($retstring, 1);
+}
+
 ?>
