@@ -12,32 +12,37 @@
  * won't allow the creation of those. Thus, for easier handling, we
  * have them as constants.
  */
-define("BIGTABLE", "(SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
+function BIGTABLE($game){
+	return "(SELECT iwsGames.id AS game_id, iwsGames.name AS game_name, iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
 			iwsAnswers.id AS answers_id,
 			iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
 			iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
-		  FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
-			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
-		  ) AS bigtable");
+		FROM (iwsGames JOIN ((iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
+			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id) 
+			ON iwsGames.id = iwsQuestion.game)) AS bigtable ";
+}
 		  
-define("POINTS_PER_ANSWER", "(SELECT iwsAnswers.answer AS answer_id, COUNT(iwsAnswers.player) AS points
-				FROM iwsAnswers
-				GROUP BY iwsAnswers.answer) AS points_per_answer");
+function POINTS_PER_ANSWER($game) { 
+	return "(SELECT iwsAnswers.answer AS answer_id, COUNT(iwsAnswers.player) AS points
+		FROM iwsAnswers
+		WHERE iwsAnswers.game = $game
+		GROUP BY iwsAnswers.answer) AS points_per_answer";
+}
 
 // table with round - question - answer - points for Answer
-function html_output_round_answers_points($nr){
+function html_output_round_answers_points($nr, $game){
 	$query = "SELECT DISTINCT round, question_id AS question, answer_value AS answer, points
-	 FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+	 FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . "
 		 ON points_per_answer.answer_id = bigtable.answer_id
-	 WHERE round = " . mysql_real_escape_string($nr) . "
+	 WHERE round = " . mysql_real_escape_string($nr) . " 
 	 ORDER BY question_id, player_id;";
 	 
 	 $result = mysql_query($query) or die("html_output_get_round: Anfrage fehlgeschlagen: " . mysql_error());
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Question</th>\n\t<th>Answer</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Frage</th>\n\t<th>Antwort</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$round	= $row['round'];
@@ -53,21 +58,21 @@ function html_output_round_answers_points($nr){
 }
 
 // for 1 user: table with round - number of question - question - answer (as input field)
-function html_output_round_questions_answers_by_user($round, $user){
+function html_output_round_questions_answers_by_user($round, $user, $game){
 	$query = "SELECT iwsQuestion.round AS round,  iwsQuestion.number AS number, iwsQuestion.value as question, answer
-		FROM (SELECT iwsAnswer.value AS answer, iwsQuestion.id AS question_id
+		FROM ((SELECT iwsAnswer.value AS answer, iwsQuestion.id AS question_id
 			FROM ((iwsPlayers JOIN iwsAnswers ON iwsPlayers.id = iwsAnswers.player) 
 				JOIN iwsAnswer ON iwsAnswer.id = iwsAnswers.answer) JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id
 			WHERE iwsPlayers.name LIKE '" . mysql_real_escape_string($user) . "') AS answeredquestions
-			RIGHT OUTER JOIN iwsQuestion ON iwsQuestion.id = answeredquestions.question_id
-		WHERE round = " . mysql_real_escape_string($round) . "
+			RIGHT OUTER JOIN iwsQuestion ON iwsQuestion.id = answeredquestions.question_id)
+		WHERE round = " . mysql_real_escape_string($round) . " AND iwsQuestion.game = ".mysql_real_escape_string($game)." 
 		ORDER BY number ASC";
 	$result = mysql_query($query) or die("html_output_round_questions_answers: Anfrage fehlgeschlagen: " . mysql_error());
 	
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Number</th>\n\t<th>Question</th>\n\t<th>Answer</th>\n</tr>\n\n";
+	echo "<table class='table table-bordered'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Number</th>\n\t<th>Frage</th>\n\t<th>Antwort</th>\n</tr>\n\n";
 	
 	$i = 1;
 	while($row = mysql_fetch_array($result)){
@@ -77,7 +82,7 @@ function html_output_round_questions_answers_by_user($round, $user){
 		$answer	= $row['answer'];
 		
 		echo "<tr>\n\t<td>" . $round . "</td>\n\t<td>" . $number . "</td>\n\t<td>" . $question . '</td>
-		<td><input name="answer_' . $i . '" type="text" size="50" maxlength="100" autocomplete="off" data-provide="typeahead" data-source='."'".'['.get_answers_for($round, $number).']'."'".' value="' . $answer . '" /></td>
+		<td><input name="answer_' . $i . '" type="text" size="50" maxlength="100" style="width:95%; margin-bottom: 0px;"; autocomplete="off" data-provide="typeahead" data-source='."'".'['.get_answers_for($round, $number, $game).']'."'".' value="' . $answer . '" /></td>
 		</tr>
 		
 		';
@@ -92,8 +97,8 @@ function html_output_round_questions_answers_by_user($round, $user){
 }
 
 // option list for dropdown/selection consisting of all players' names
-function html_output_list_of_players($selected_player){
-	$query = "SELECT DISTINCT name FROM iwsPlayers ORDER BY id ASC";
+function html_output_list_of_players($selected_player, $game){
+	$query = "SELECT DISTINCT name FROM iwsPlayers WHERE iwsPlayers.game = ".mysql_real_escape_string($game)." ORDER BY iwsPlayers.id ASC";
 	$result = mysql_query($query) or die("html_output_list_of_players: Anfrage fehlgeschlagen: " . mysql_error());
 	
 	// HTML output
@@ -110,11 +115,11 @@ function html_output_list_of_players($selected_player){
 }
 
 // table with round - player - points for each player in that round
-function html_output_round_player_points($nr){
+function html_output_round_player_points($nr, $game){
 	$query = "SELECT round, player_name, sum(points) AS sum_points
-		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+		FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . "
 			ON points_per_answer.answer_id = bigtable.answer_id
-		WHERE round = " . mysql_real_escape_string($nr) . "
+		WHERE round = " . mysql_real_escape_string($nr) . " AND game_id = ".mysql_real_escape_string($game)." 
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
 	
@@ -122,8 +127,8 @@ function html_output_round_player_points($nr){
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Player</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Spieler</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$round	= $row['round'];
@@ -138,10 +143,11 @@ function html_output_round_player_points($nr){
 }
 
 // table with player - sum of all points
-function html_output_sum_of_all_points(){
+function html_output_sum_of_all_points($game){
 	$query = "SELECT player_name, sum(points) AS sum_points
-		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . " 
+		FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . " 
 			ON points_per_answer.answer_id = bigtable.answer_id
+		WHERE game_id = ".mysql_real_escape_string($game)." 
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
 	
@@ -149,8 +155,8 @@ function html_output_sum_of_all_points(){
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Player</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Spieler</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$player_name= $row['player_name'];
@@ -164,18 +170,18 @@ function html_output_sum_of_all_points(){
 }
 
 // table with round - question - player - answer - points per answer
-function html_output_get_round($nr){
+function html_output_get_round($nr, $game){
 	$query = "SELECT round, question_value AS question, player_name AS player, answer_value AS answer, points
-	 FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . " ON points_per_answer.answer_id = bigtable.answer_id
-	 WHERE round = " . mysql_real_escape_string($nr) . "
+	 FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . " ON points_per_answer.answer_id = bigtable.answer_id
+	 WHERE round = " . mysql_real_escape_string($nr) . " AND game_id = ".mysql_real_escape_string($game)." 
 	 ORDER BY question_id, player_id;";
 	 
 	 $result = mysql_query($query) or die("html_output_get_round: Anfrage fehlgeschlagen: " . mysql_error());
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Question</th>\n\t<th>Player</th>\n\t<th>Answer</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Frage</th>\n\t<th>Spieler</th>\n\t<th>Antwort</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$round	= $row['round'];
@@ -192,11 +198,11 @@ function html_output_get_round($nr){
 }
 
 // table with round - question - answer - points per answer
-function html_output_get_round_points($nr){
+function html_output_get_round_points($nr, $game){
 	$query = "SELECT iwsQuestion.round AS round, iwsQuestion.value AS question, iwsAnswer.value AS answer, count(iwsAnswers.player) AS points
 	 FROM ((iwsAnswers) 
 		JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id)
-	 WHERE round = " . mysql_real_escape_string($nr) . "
+	 WHERE round = " . mysql_real_escape_string($nr) . " AND iwsQuestion.game = ".mysql_real_escape_string($game)." 
 	 GROUP BY round, question, answer
 	 ORDER BY iwsQuestion.id;";
 	 
@@ -204,8 +210,8 @@ function html_output_get_round_points($nr){
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Question</th>\n\t<th>Answer</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Frage</th>\n\t<th>Antwort</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$i = 1;
@@ -223,17 +229,18 @@ function html_output_get_round_points($nr){
 }
 
 // quite a big table with round - question - player - answer - points per Answer
-function html_output_get_all_rounds(){
+function html_output_get_all_rounds($game){
 	$query = "SELECT round, question_value AS question, player_name AS player, answer_value AS answer, points
-	 FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . " ON points_per_answer.answer_id = bigtable.answer_id
+	 FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . " ON points_per_answer.answer_id = bigtable.answer_id
+	 WHERE game_id = ".mysql_real_escape_string($game)." 
 	 ORDER BY round, question_id;";
 	 
 	 $result = mysql_query($query) or die("html_output_get_all_rounds: Anfrage fehlgeschlagen: " . mysql_error());
 	 
 	// HTML output
 	
-	echo "<table border='1'>\n";
-	echo "<tr>\n\t<th>Round</th>\n\t<th>Question</th>\n\t<th>Player</th>\n\t<th>Answer</th>\n\t<th>Points</th>\n</tr>\n\n";
+	echo "<table class='resulttable'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Frage</th>\n\t<th>Spieler</th>\n\t<th>Antwort</th>\n\t<th>Punkte</th>\n</tr>\n\n";
 	
 	while($row = mysql_fetch_array($result)){
 		$round	= $row['round'];
@@ -249,10 +256,10 @@ function html_output_get_all_rounds(){
 	mysql_free_result($result);
 }
 
-function html_list_questions_of_round($round){
+function html_list_questions_of_round($round, $game){
 	$query = "SELECT value AS question
 	 FROM iwsQuestion
-	 WHERE round = " . mysql_real_escape_string($round) . "
+	 WHERE round = " . mysql_real_escape_string($round) . " AND iwsQuestion.game = ".mysql_real_escape_string($game)." 
 	 ORDER BY number ASC;";
 	 
 	 $result = mysql_query($query) or die("html_list_questions_of_round: Anfrage fehlgeschlagen: " . mysql_error());
@@ -271,11 +278,11 @@ function html_list_questions_of_round($round){
 	mysql_free_result($result);
 }
 
-function html_bbcode_results_current_round($round){
+function html_bbcode_results_current_round($round, $game){
 	$query = "SELECT player_name, sum(points) AS sum_points
-		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+		FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . "
 			ON points_per_answer.answer_id = bigtable.answer_id
-		WHERE round = " . mysql_real_escape_string($round) . "
+		WHERE round = " . mysql_real_escape_string($round) . " AND game_id = ".mysql_real_escape_string($game)." 
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
 	
@@ -311,10 +318,11 @@ function html_bbcode_results_current_round($round){
 
 }
 
-function html_bbcode_results(){
+function html_bbcode_results($game){
 	$query = "SELECT player_name, sum(points) AS sum_points
-		FROM " . BIGTABLE . " JOIN " . POINTS_PER_ANSWER . "
+		FROM " . BIGTABLE($game) . " JOIN " . POINTS_PER_ANSWER($game) . "
 			ON points_per_answer.answer_id = bigtable.answer_id
+		WHERE game_id = ".mysql_real_escape_string($game)." 
 		GROUP BY player_id
 		ORDER BY sum_points DESC;";
 	
@@ -348,6 +356,19 @@ function html_bbcode_results(){
 	
 	mysql_free_result($result);
 
+}
+
+function html_list_of_games(){
+	echo '<ol>';
+	
+	$query = "SELECT id, name FROM iwsGames";
+	$result = mysql_query($query) or die("html_list_of_games: Anfrage fehlgeschlagen: " . mysql_error());
+	
+	while($row = mysql_fetch_array($result)){
+		echo "<li><a href='iws.php?id=".$row['id']."'>".$row['name']."</a></li>\n";
+	}
+	
+	echo '</ol>';
 }
 
 ?>

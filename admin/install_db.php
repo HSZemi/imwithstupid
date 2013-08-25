@@ -19,7 +19,9 @@ $query = "DROP TABLE IF EXISTS
 		iwsAnswer,
 		iwsQuestion,
 		iwsRound,
-		iwsPlayers;";
+		iwsPlayers,
+		iwsUsers,
+		iwsGames;";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 echo " done.<br/>\n";
 
@@ -36,8 +38,8 @@ echo " done.<br/>\n";*/
 
 // Tabellen anlegen
 echo "Creating tables<br/>\n";
-echo "- Create table iwsPlayer<br/>\n";
-$query = "CREATE TABLE iwsPlayers ( 
+echo "- Create table iwsGames<br/>\n";
+$query = "CREATE TABLE iwsGames ( 
 		id 		int AUTO_INCREMENT, 
 		name 		varchar(255) UNIQUE NOT NULL, 
 		
@@ -45,13 +47,27 @@ $query = "CREATE TABLE iwsPlayers (
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
-echo "- Create table iwsRound<br/>\n";
-$query = "CREATE TABLE iwsRound ( 
-		number 	int, 
+echo "- Create table iwsPlayer<br/>\n";
+$query = "CREATE TABLE iwsPlayers ( 
+		id 		int AUTO_INCREMENT, 
+		name 		varchar(255) UNIQUE NOT NULL, 
+		game		int,
 		
-		PRIMARY KEY (number) 
+		PRIMARY KEY (id),
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+
+/*echo "- Create table iwsRound<br/>\n";
+$query = "CREATE TABLE iwsRound ( 
+		id		int,
+		number 	int, 
+		game		int,
+		
+		PRIMARY KEY (id),
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
+	);";
+$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());*/
 
 echo "- Create table iwsQuestion<br/>\n";
 $query = "CREATE TABLE iwsQuestion ( 
@@ -59,10 +75,11 @@ $query = "CREATE TABLE iwsQuestion (
 		round 	int, 
 		number 	int, 
 		value 	varchar(1024), 
+		game		int,
 		
-		PRIMARY KEY (id), 
-		FOREIGN KEY (round) REFERENCES iwsRound(number) ON DELETE CASCADE ON UPDATE CASCADE,
-		UNIQUE (round, number)
+		PRIMARY KEY (id),
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		UNIQUE (round, number, game)
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
@@ -71,9 +88,11 @@ $query = "CREATE TABLE iwsAnswer (
 		id		int AUTO_INCREMENT,
 		question	int,
 		value		varchar(255),
+		game		int,
 		
 		PRIMARY KEY (id),
 		FOREIGN KEY (question) REFERENCES iwsQuestion(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		UNIQUE (question, value)
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
@@ -83,12 +102,23 @@ $query = "CREATE TABLE iwsAnswers (
 		id		int AUTO_INCREMENT,
 		player	int,
 		answer	int,
+		game		int,
 		
 		PRIMARY KEY (id),
 		FOREIGN KEY (player) REFERENCES iwsPlayers(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		FOREIGN KEY (answer) REFERENCES iwsAnswer(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		UNIQUE (player, answer)
 	);";
+$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+
+echo "- CREATE TABLE iwsUsers<br />\n";
+$query = "CREATE TABLE iwsUsers (
+		id		int			AUTO_INCREMENT PRIMARY KEY,
+		username	VARCHAR(255)	UNIQUE,
+		password	text
+	);";
+	
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
 // Views anlegen

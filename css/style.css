@@ -1,23 +1,23 @@
 body {
 	font-family: verdana;
-	font-size: 8pt;
-	/*background-color: #22aa33;*/
+	/*font-size: 8pt;*/
+	background-color: gray;
 }
 
-table {
+.resulttable {
 	border-collapse:collapse;
 	font-size: 8pt;
 }
 
-th {
+.resulttable th {
 	background-color: #22aa33;
 }
 
-table,th,td {
+.resulttable, .resulttable th, .resulttable td {
 	border: 1px solid #22aa33;
 	padding-left: 5px;
 	padding-right: 5px;
-}
+}*/
 
 div {
 	background-color: #eee;
@@ -34,4 +34,22 @@ div.tabcontent {
 
 .nav {
     margin-bottom: 0px;
+}
+
+.top-buffer { 
+    margin-top:50px; 
+}
+
+.container{
+	background-color: white;
+	padding: 1em;
+	border-radius: 5px;
+}
+
+.playermgmt{
+	float:left; 
+	border:solid 1px #aaa; 
+	margin-right: 1em; 
+	border-radius: 5px;
+	padding: 5px;
 }
