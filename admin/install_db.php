@@ -20,8 +20,8 @@ $query = "DROP TABLE IF EXISTS
 		iwsQuestion,
 		iwsRound,
 		iwsPlayers,
-		iwsUsers,
-		iwsGames;";
+		iwsGames,
+		iwsUsers;";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 echo " done.<br/>\n";
 
@@ -38,23 +38,37 @@ echo " done.<br/>\n";*/
 
 // Tabellen anlegen
 echo "Creating tables<br/>\n";
+
+echo "- CREATE TABLE iwsUsers<br />\n";
+$query = "CREATE TABLE iwsUsers (
+		id		int			AUTO_INCREMENT,
+		username	VARCHAR(255)	UNIQUE,
+		password	text,
+		
+		PRIMARY KEY (id)
+	);";
+$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+
 echo "- Create table iwsGames<br/>\n";
 $query = "CREATE TABLE iwsGames ( 
 		id 		int AUTO_INCREMENT, 
 		name 		varchar(255) UNIQUE NOT NULL, 
+		user		int,
 		
-		PRIMARY KEY (id) 
+		PRIMARY KEY (id),
+		FOREIGN KEY (user) REFERENCES iwsUsers(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
 echo "- Create table iwsPlayer<br/>\n";
 $query = "CREATE TABLE iwsPlayers ( 
 		id 		int AUTO_INCREMENT, 
-		name 		varchar(255) UNIQUE NOT NULL, 
+		name 		varchar(255) NOT NULL, 
 		game		int,
 		
 		PRIMARY KEY (id),
-		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		UNIQUE (name, game)
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
@@ -112,14 +126,6 @@ $query = "CREATE TABLE iwsAnswers (
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
-echo "- CREATE TABLE iwsUsers<br />\n";
-$query = "CREATE TABLE iwsUsers (
-		id		int			AUTO_INCREMENT PRIMARY KEY,
-		username	VARCHAR(255)	UNIQUE,
-		password	text
-	);";
-	
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 
 // Views anlegen
 // noview

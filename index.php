@@ -9,8 +9,19 @@
     
     if(isset($_POST['action']) and isset($_POST['name'])){
 	$handle = db_connect();
-	add_game($_POST['name']);
+	if($_POST['name'] != ''){
+		add_game($_POST['name'], $_SESSION['user_id']);
+	}
 	db_close($handle);
+    }
+    
+    if(isset($_GET['err']) and intval($_GET['err']) == 1){
+	$errormessage = '<div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <strong>Das ist keins deiner Spiele.</strong> Lass den Unfug.
+    </div>';
+    } else {
+	$errormessage = '';
     }
 
 ?>
@@ -29,12 +40,14 @@
   <div class="container top-buffer">
   <p id='navi-top'>Angemeldet als <?php echo $_SESSION['user'] ?> (<a href="logout.php" title="Abmelden">Abmelden</a>)</p>
   
+  <?php echo $errormessage; ?>
+  
     <div class="span6 offset3">
     
     <h1>Spielübersicht</h1>
 	<?php 
 	$handle = db_connect();
-	html_list_of_games();
+	html_list_of_games($_SESSION['user_id']);
 	db_close($handle);
 	?>
 	<hr />

@@ -1,13 +1,12 @@
 <?php
     session_start();
 
-    if(!isset($_SESSION['user_id']) or $_SESSION['user_id'] < 0){
-        header("Location: login.php");
-    }
+
     include 'lib/db.php';
     include 'lib/user.php';
 	$db = db_connect();
     $updated = create_or_update_user('admin', 'admin');
+    $updated = create_or_update_user('keks', 'keks');
     db_close($db);
      
 ?>
@@ -24,7 +23,10 @@
   <body>
   
   <div class="container top-buffer">
-  Benutzer admin:admin erstellt.
+  Benutzer admin:admin erstellt.<br/>
+  Benutzer keks:keks erstellt.<br/>
+  
+  <a href="login.php" title="Login">Zum Login</a>
   </div>
   
   </body>

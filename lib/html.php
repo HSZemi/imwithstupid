@@ -58,7 +58,7 @@ function html_output_round_answers_points($nr, $game){
 }
 
 // for 1 user: table with round - number of question - question - answer (as input field)
-function html_output_round_questions_answers_by_user($round, $user, $game){
+function html_output_round_questions_answers_by_player($round, $user, $game){
 	$query = "SELECT iwsQuestion.round AS round,  iwsQuestion.number AS number, iwsQuestion.value as question, answer
 		FROM ((SELECT iwsAnswer.value AS answer, iwsQuestion.id AS question_id
 			FROM ((iwsPlayers JOIN iwsAnswers ON iwsPlayers.id = iwsAnswers.player) 
@@ -71,8 +71,8 @@ function html_output_round_questions_answers_by_user($round, $user, $game){
 	
 	// HTML output
 	
-	echo "<table class='table table-bordered'>\n";
-	echo "<tr>\n\t<th>Runde</th>\n\t<th>Number</th>\n\t<th>Frage</th>\n\t<th>Antwort</th>\n</tr>\n\n";
+	echo "<table class='table table-bordered table-hover'>\n";
+	echo "<tr>\n\t<th>Runde</th>\n\t<th>Nummer</th>\n\t<th>Frage</th>\n\t<th>Antwort</th>\n</tr>\n\n";
 	
 	$i = 1;
 	while($row = mysql_fetch_array($result)){
@@ -257,7 +257,7 @@ function html_output_get_all_rounds($game){
 }
 
 function html_list_questions_of_round($round, $game){
-	$query = "SELECT value AS question
+	$query = "SELECT id, value AS question
 	 FROM iwsQuestion
 	 WHERE round = " . mysql_real_escape_string($round) . " AND iwsQuestion.game = ".mysql_real_escape_string($game)." 
 	 ORDER BY number ASC;";
@@ -266,14 +266,66 @@ function html_list_questions_of_round($round, $game){
 	 
 	// HTML output
 	
+	echo '<form action="deletequestion.php" name="delete_question" method="post">';
 	echo "<ol>\n";
 	
 	while($row = mysql_fetch_array($result)){
+		$id		= $row['id'];
 		$question	= $row['question'];
 		
-		echo "<li>".$question."</li>\n";
+		echo "<li>".$question." <button class='btn btn-link' type='submit' value='$id' name='question_to_delete'><i class='icon-trash'></i></button></li>\n";
 	}
 	echo "</ol>\n";
+	echo "</form>";
+	
+	mysql_free_result($result);
+}
+
+function html_list_answers_of_round($round, $game){
+	$query = "SELECT id, value 
+	 FROM iwsQuestion
+	 WHERE round = " . mysql_real_escape_string($round) . " AND iwsQuestion.game = ".mysql_real_escape_string($game)." 
+	 ORDER BY number ASC;";
+	 
+	 $result = mysql_query($query) or die("html_list_answers_of_round: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo '<form action="deleteanswer.php" name="delete_answer" method="post">';
+	echo "<ol>\n";
+	
+	while($row = mysql_fetch_array($result)){
+		$id		= $row['id'];
+		$value	= $row['value'];
+		
+		echo "<li>".$value."</li>";
+		html_list_answers_for_question(intval($id));
+	}
+	echo "</ol>\n";
+	echo "</form>";
+	
+	mysql_free_result($result);
+}
+
+function html_list_answers_for_question($question_id){
+	$query = "SELECT id, value AS answer
+	 FROM iwsAnswer
+	 WHERE question = " . intval($question_id)." 
+	 ORDER BY id ASC;";
+	 
+	 $result = mysql_query($query) or die("html_list_answers_for_question: Anfrage fehlgeschlagen: " . mysql_error());
+	 
+	// HTML output
+	
+	echo "<ul>\n";
+	
+	while($row = mysql_fetch_array($result)){
+		$id		= $row['id'];
+		$answer	= $row['answer'];
+		
+		echo "<li>".$answer." <button class='btn btn-link' type='submit' value='$id' name='answer_to_delete'><i class='icon-trash'></i></button></li>\n";
+	}
+	echo "</ul>\n";
 	
 	mysql_free_result($result);
 }
@@ -358,10 +410,10 @@ function html_bbcode_results($game){
 
 }
 
-function html_list_of_games(){
+function html_list_of_games($user_id){
 	echo '<ol>';
 	
-	$query = "SELECT id, name FROM iwsGames";
+	$query = "SELECT id, name FROM iwsGames WHERE user=".intval($user_id);
 	$result = mysql_query($query) or die("html_list_of_games: Anfrage fehlgeschlagen: " . mysql_error());
 	
 	while($row = mysql_fetch_array($result)){

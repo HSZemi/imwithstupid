@@ -29,7 +29,19 @@
 	$round = 1;
     }
     
-    $message = post_action();
+    if(isset($_POST['question_to_delete'])){
+	isset($_POST["active_tab"]) ? $_SESSION['activetab'] = $_POST["active_tab"] : $activetab = "#add_question";
+	delete_question(intval($_POST['question_to_delete']));
+	$message[0] = 'alert';
+	$message[1] = "Frage gelöscht.";
+    } elseif(isset($_POST['answer_to_delete'])) {
+	isset($_POST["active_tab"]) ? $_SESSION['activetab'] = $_POST["active_tab"] : $activetab = "#answers";
+	delete_answer(intval($_POST['answer_to_delete']));
+	$message[0] = 'alert';
+	$message[1] = "Antwort gelöscht.";
+    } else {
+	$message = post_action();
+    }
     
     if(isset($_SESSION['round'])){
 	$round = $_SESSION['round'];
@@ -37,13 +49,16 @@
 	$round = 1;
     }
     
-    if(isset($_SESSION['player'])){
+    if(isset($_SESSION['player']) and $_SESSION['player'] != ''){
 	$player = $_SESSION['player'];
     } else {
 	$player = get_first_player($game);
     }
     
-    
+    if(get_user_for_game($game) != $_SESSION['user_id']){
+	header("Location: index.php?err=1&user=".get_user_for_game($game)."&gameuser=".$_SESSION['user_id']);
+    }
+
 
 ?>
 <!DOCTYPE html>
@@ -105,19 +120,20 @@
 	<p style="clear:both"></p>
 	
 	<?php 
-		if(isset($message)){
-			echo "<div class='alert'>
+		if(isset($message) and $message != ''){
+			echo "<div class='$message[0]'>
 				<button type='button' class='close' data-dismiss='alert'>&times;</button>
-				$message
+				$message[1]
 				</div>";
 		}
 	?>
   
 <!-- Tabs -->
-  <ul class="nav nav-pills" id="navi">
+  <ul style="background-color: #eee;" class="nav nav-pills" id="navi">
     <li><a href="#player_management" data-toggle="tab">Spieler verwalten</a></li>
     <li><a href="#enter_results" data-toggle="tab">Ergebnisse eingeben</a></li>
-    <li><a href="#add_question" data-toggle="tab">Frage hinzufügen</a></li>
+    <li><a href="#add_question" data-toggle="tab">Fragen verwalten</a></li>
+    <li><a href="#answers" data-toggle="tab">Antworten verwalten</a></li>
     <li><a href="#results" data-toggle="tab">Auswertung</a></li>
   </ul>
   
@@ -190,7 +206,7 @@
 	</div><br />
 	
 		<?php
-			html_output_round_questions_answers_by_user($round, $player, $game);
+			html_output_round_questions_answers_by_player($round, $player, $game);
 		?>
 	
 	</form>
@@ -200,7 +216,7 @@
   
 <!-- Frage hinzufügen -->
   <div class="tabcontent tab-pane" id="add_question">
-	<h2>Frage zu Runde <?php echo $round; ?> hinzufügen</h2>
+	<h2>Fragen in Runde <?php echo $round; ?></h2>
 	
 	<?php html_list_questions_of_round($round, $game); ?>
 	
@@ -214,6 +230,14 @@
                   <button name="action" value="add_question" class="btn" type="submit">hinzufügen</button>
             </div>
 	</form>
+  </div>
+
+<!-- Liste der Antworten -->
+  <div class="tabcontent tab-pane" id="answers">
+	<h2>Antworten in Runde <?php echo $round; ?></h2>
+	
+	<?php html_list_answers_of_round($round, $game); ?>
+	
   </div>
   
 <!-- Punkteübersicht -->
@@ -230,17 +254,17 @@
 	
 	<div style="background:white;" class="tab-content">
 		<div style="background:white;" class="tab-pane" id="res_current_round">
-			Ergebnisse der aktuellen Runde
+			<h4>Ergebnisse der aktuellen Runde</h4>
 			<?php html_output_get_round($round, $game); ?>
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_for_answers_current_round">
-			Punkte für Antworten der aktuellen Runde
+			<h4>Punkte für Antworten der aktuellen Runde</h4>
 			<?php html_output_round_answers_points($round, $game); ?>
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_current_round">
-			Punktestand aktuelle Runde<br />
+			<h4>Punktestand aktuelle Runde</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
 				html_output_round_player_points($round, $game);
@@ -251,7 +275,7 @@
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_all">
-			Punktestand insgesamt<br />
+			<h4>Punktestand insgesamt</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
 				html_output_sum_of_all_points($game);

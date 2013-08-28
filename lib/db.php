@@ -66,6 +66,14 @@ function create_question($round, $number, $value, $game){
 	}
 }
 
+function delete_question($id){
+	$query = "DELETE FROM iwsQuestion WHERE id=".intval($id);
+	$result = mysql_query($query);
+	if(!$result){
+		echo "delete_question: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+	}
+}
+
 function create_answer($question_string, $value, $game){
 	// find question id
 	$query = "SELECT id FROM iwsQuestion WHERE value LIKE '" .  validate_string_for_mysql_html($question_string) . "' AND game=".intval($game).";";
@@ -91,6 +99,15 @@ function create_answer_number($question_id, $value, $game){
 	$result = mysql_query($query);
 	if(!$result){
 		echo "create_answer_number: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+	}
+}
+
+
+function delete_answer($id){
+	$query = "DELETE FROM iwsAnswer WHERE id=".intval($id);
+	$result = mysql_query($query);
+	if(!$result){
+		echo "delete_answer: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
 	}
 }
 
@@ -223,6 +240,40 @@ function get_max_question_of_round($nr, $game){
 	return $answer["max"];
 }
 
+function get_question_by_id($id){
+	$query = "SELECT id, value FROM iwsQuestion WHERE id=".intval($id);
+	$result = mysql_query($query);
+	if(!$result){
+		echo "get_question_by_id: Anfrage  fehlgeschlagen: " . mysql_error() . "<br/>";
+	}
+	
+	$answer = mysql_fetch_array($result, MYSQL_ASSOC);
+	mysql_free_result($result);
+	
+	if(isset($answer["value"]) and $answer["value"] != ""){
+		return $answer["value"];
+	} else {
+		return "---get_question_by_id(".intval($id).") failed---";
+	}
+}
+
+function get_answer_by_id($id){
+	$query = "SELECT id, value FROM iwsAnswer WHERE id=".intval($id);
+	$result = mysql_query($query);
+	if(!$result){
+		echo "get_answer_by_id: Anfrage  fehlgeschlagen: " . mysql_error() . "<br/>";
+	}
+	
+	$answer = mysql_fetch_array($result, MYSQL_ASSOC);
+	mysql_free_result($result);
+	
+	if(isset($answer["value"]) and $answer["value"] != ""){
+		return $answer["value"];
+	} else {
+		return "---get_answer_by_id(".intval($id).") failed---";
+	}
+}
+
 function get_max_round($game){
 	$query = "SELECT MAX(round) AS max FROM iwsQuestion WHERE game=".intval($game).";";
 	$result = mysql_query($query);
@@ -237,7 +288,7 @@ function get_max_round($game){
 }
 
 function get_first_player($game){
-	$query = "SELECT name FROM iwsPlayers WHERE id IN (SELECT MIN(id) FROM iwsPlayers) AND game=".intval($game).";";
+	$query = "SELECT name FROM iwsPlayers WHERE id IN (SELECT MIN(id) FROM iwsPlayers WHERE game=".intval($game).");";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "get_first_player: Anfrage  fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -270,8 +321,8 @@ function get_answers_for($round, $question, $game){
 	return substr($retstring, 1);
 }
 
-function add_game($name){
-	$query = "INSERT INTO iwsGames(name) VALUES ('".mysql_real_escape_string($name)."')";
+function add_game($name, $user_id){
+	$query = "INSERT INTO iwsGames(name, user) VALUES ('".validate_string_for_mysql_html($name)."', ".intval($user_id).")";
 	$result = mysql_query($query);
 	if(!$result){
 		echo "add_game: Anfrage  fehlgeschlagen: " . mysql_error() . "<br/>";
@@ -293,6 +344,20 @@ function get_game_by_id($id){
 	} else {
 		return "---get_game_by_id(".intval($id).") failed---";
 	}
+}
+
+function get_user_for_game($game){
+	$query = "SELECT user FROM iwsGames WHERE id=".intval($game);
+	$result = mysql_query($query);
+	if($answer = mysql_fetch_array($result)){
+		$user_id = intval($answer['user']);
+	} else {
+		$user_id = 0;
+	}
+	
+	mysql_free_result($result);
+	
+	return $user_id;
 }
 
 ?>
