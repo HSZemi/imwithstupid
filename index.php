@@ -37,6 +37,8 @@
   </head>
   <body>
   
+  <script src="js/jquery-2.0.2.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
   <div class="container top-buffer">
   <p id='navi-top'>Angemeldet als <?php echo $_SESSION['user'] ?> (<a href="logout.php" title="Abmelden">Abmelden</a>)</p>
   

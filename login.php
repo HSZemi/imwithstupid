@@ -29,7 +29,7 @@
             $_SESSION['user_id'] = $user_id;
             $_SESSION['round'] = 1;
             $_SESSION['player'] = '';
-            $_SESSION['activetab'] = "#enter_results";
+            $_SESSION['activetab'] = "#enter_answers";
             
             header("Location: index.php?login=true");
             

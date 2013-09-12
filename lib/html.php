@@ -103,7 +103,7 @@ function html_dropdown_list_of_players($selected_player, $game, $select_id = "")
 	$result = mysql_query($query) or die("html_output_list_of_players: Anfrage fehlgeschlagen: " . mysql_error());
 	
 	// HTML output
-	echo '<select name="name" id="'.$select_id.'" size="1">';
+	echo '<select name="player_name" id="'.$select_id.'" size="1">';
 	while($row = mysql_fetch_array($result)){
 		$name	= $row['name'];
 		

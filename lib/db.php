@@ -192,19 +192,23 @@ function remove_answers_for_question($player_id, $question_id, $game){
 }
 
 function insert_answer($player_id, $question_id, $answer_string, $game){
-	$ans_id = get_answer_id($question_id, $answer_string, $game);
-	if($ans_id <= 0){
-		// answer still must be created
-		create_answer($question_id, $answer_string, $game);
+	if($answer_string != ''){
 		$ans_id = get_answer_id($question_id, $answer_string, $game);
-	}
+		if($ans_id <= 0){
+			// answer still must be created
+			create_answer($question_id, $answer_string, $game);
+			$ans_id = get_answer_id($question_id, $answer_string, $game);
+		}
 	
-	remove_answers_for_question($player_id, $question_id, $game);
-	
-	$query = "INSERT INTO iwsAnswers(player, answer, game) VALUES (".intval($player_id).", $ans_id, ".intval($game).");";
-	$result = mysql_query($query);
-	if(!$result){
-		echo "insert_answer: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+		remove_answers_for_question($player_id, $question_id, $game);
+		
+		$query = "INSERT INTO iwsAnswers(player, answer, game) VALUES (".intval($player_id).", $ans_id, ".intval($game).");";
+		$result = mysql_query($query);
+		if(!$result){
+			echo "insert_answer: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+		}
+	} else {
+		remove_answers_for_question($player_id, $question_id, $game);
 	}
 }
 

@@ -27,7 +27,7 @@
 	$answer_to_delete = $_POST['answer_to_delete'];
     }
     
-    $_SESSION['activetab'] = '#add_question';
+    $_SESSION['activetab'] = '#questions_and_answers';
     
     
 
@@ -52,7 +52,9 @@
     <form action="iws.php" name="delete_answer" method="post">
     <p>Soll die Antwort mit der ID <?php echo $answer_to_delete . ' (<em>' . get_answer_by_id($answer_to_delete) . '</em>)'; ?> wirklich gelöscht werden?</p>
     <div class="form-actions text-center">
-	<button type="submit" class="btn" name="active_tab" value="#answers">Abbrechen</button>
+	<!--<button type="submit" class="btn" name="active_tab" value="#questions_and_answers">Abbrechen</button>-->
+	<input type="hidden" name="action" value="delete_answer" />
+	<a href="iws.php" class="btn">Abbrechen</a>
 	<button type="submit" class="btn btn-danger" value="<?php echo $answer_to_delete; ?>" name="answer_to_delete">Löschen</button>
     </div>
 	

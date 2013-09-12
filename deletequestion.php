@@ -27,7 +27,7 @@
 	$question_to_delete = intval($_GET['id']);
     }
     
-    $_SESSION['activetab'] = '#add_question';
+    $_SESSION['activetab'] = '#questions_and_answers';
     
     
 
@@ -52,7 +52,9 @@
     <form action="iws.php" name="delete_question" method="post">
     <p>Soll die Frage mit der ID <?php echo $question_to_delete . ' (<em>' . get_question_by_id($question_to_delete) . '</em>)'; ?> wirklich gelöscht werden? <strong>Alle eingetragenen Antworten werden ebenfalls gelöscht!<strong></p>
     <div class="form-actions text-center">
-	<button type="submit" class="btn" name="active_tab" value="#add_question">Abbrechen</button>
+	<!--<button type="submit" class="btn" name="active_tab" value="#questions_and_answers">Abbrechen</button>-->
+	<input type="hidden" name="action" value="delete_question" />
+	<a href="iws.php" class="btn">Abbrechen</a>
 	<button type="submit" class="btn btn-danger" value="<?php echo $question_to_delete; ?>" name="question_to_delete">Löschen</button>
     </div>
 	
