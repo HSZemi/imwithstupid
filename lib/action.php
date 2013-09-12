@@ -24,6 +24,8 @@ if($player == ""){
 
 $message = '';
 
+
+
 switch ($action) {
 	case "add_player":
 		$name = $_POST["name"];
@@ -49,7 +51,8 @@ switch ($action) {
 		}
 		break;
 	case "load_round":
-		$message = "Runde " . $round . " wurde geladen.";
+		$message[0] = 'alert alert-success';
+		$message[1] = "Runde " . $round . " wurde geladen.";
 		break;
 	case "new_round":
 		$_SESSION['round'] = max(get_max_round($game), $_SESSION['round'])+1;
@@ -64,9 +67,14 @@ switch ($action) {
 		break;
 	case "save_user_round":
 		$_SESSION['player'] = $_POST["name"];
-		
-		for($i = 1; $i <= get_max_question_of_round($round,$game); $i++){
-			add_answer_number($_SESSION['player'], $round, $i, $_POST["answer_".$i], $game);
+		$_SESSION['player_id'] = get_player_id($_SESSION['player'], $_SESSION['game_id']);
+
+		foreach($_POST as $key => $value){
+			if(substr($key, 0, 7) === 'answer_'){
+				$question_id = intval(substr($key, 7));
+				$answer = $value;
+				insert_answer($_SESSION['player_id'], $question_id, $answer, $_SESSION['game_id']);
+			}
 		}
 		
 		$message[0] = 'alert alert-success';
@@ -75,9 +83,9 @@ switch ($action) {
 		break;
 	case "add_question":
 		$questiontext = $_POST["questiontext"];
-		$number = (get_max_question_of_round($round, $game)+1);
+		$number = (get_no_of_questions($round, $game)+1);
 		
-		create_question($round, $number, $questiontext, $game);
+		create_question($round, $questiontext, $game);
 		break;
 }
 

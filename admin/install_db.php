@@ -87,13 +87,11 @@ echo "- Create table iwsQuestion<br/>\n";
 $query = "CREATE TABLE iwsQuestion ( 
 		id 		int AUTO_INCREMENT, 
 		round 	int, 
-		number 	int, 
 		value 	varchar(1024), 
 		game		int,
 		
 		PRIMARY KEY (id),
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
-		UNIQUE (round, number, game)
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 

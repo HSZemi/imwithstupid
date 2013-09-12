@@ -27,7 +27,7 @@
 	$answer_to_delete = $_POST['answer_to_delete'];
     }
     
-    $_SESSION['activetab'] = '#answers';
+    $_SESSION['activetab'] = '#add_question';
     
     
 

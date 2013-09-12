@@ -9,36 +9,41 @@ function user_login($user, $pass){
     
     $query = "SELECT ID, password FROM iwsUsers WHERE username LIKE '$user'";
     $result = mysql_query($query) or die("user_login: Anfrage fehlgeschlagen: " . mysql_error());
-    $row = mysql_fetch_array($result);
-    $passwd_enc = $row['password'];
-    $user_id = $row['ID'];
-    mysql_free_result($result);
+    if($row = mysql_fetch_array($result)){
+	$passwd_enc = $row['password'];
+	$user_id = $row['ID'];
+	
+	mysql_free_result($result);
     
-    if (CRYPT_MD5 == 1){
-        if(crypt($pass,"$1$".PASSSALT) != $passwd_enc){
-            return -1;
-        } else {
-            return $user_id;
-        }
+	if (CRYPT_MD5 == 1){
+		if(crypt($pass,"$1$".PASSSALT) != $passwd_enc){
+			return -1;
+		} else {
+			return $user_id;
+		}
+	} else {
+		echo "MD5 not available.\n<br>";
+	}
     } else {
-        echo "MD5 not available.\n<br>";
+	//nothing found
+	mysql_free_result($result);
+	return -1;
     }
 }
 
 
 // take user_id as string or int, return corresponding username as string
 function get_user_by_id($user_id){
-    $user_id = mysql_real_escape_string($user_id);
-    $query = "SELECT username FROM iwsUsers WHERE ID='$user_id'";
+    $user_id = intval($user_id);
+    $query = "SELECT username FROM iwsUsers WHERE ID=$user_id";
     $result = mysql_query($query) or die("get_user_by_id: Anfrage fehlgeschlagen: " . mysql_error());
-    $row = mysql_fetch_array($result);
-    $username = $row['username'];
-    mysql_free_result($result);
-    
-    if(isset($row['username'])){
-        return $username;
+    if($row = mysql_fetch_array($result)){
+	$username = $row['username'];
+	mysql_free_result($result);
+	
+	return $username;
     } else {
-        return "";
+	return "";
     }
 }
 
@@ -47,12 +52,11 @@ function get_id_of_user($username){
     $username = mysql_real_escape_string($username);
     $query = "SELECT ID FROM iwsUsers WHERE username LIKE '".$username."'";
     $result = mysql_query($query) or die("get_id_of_user: Anfrage fehlgeschlagen: " . mysql_error());
-    $row = mysql_fetch_array($result);
-    $user_id = $row['ID'];
-    mysql_free_result($result);
+    if($row = mysql_fetch_array($result)){
+	$user_id = $row['ID'];
+	mysql_free_result($result);
     
-    if(isset($row['ID'])){
-        return intval($user_id);
+	return intval($user_id);
     } else {
         return -1;
     }

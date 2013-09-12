@@ -33,12 +33,12 @@
 	isset($_POST["active_tab"]) ? $_SESSION['activetab'] = $_POST["active_tab"] : $activetab = "#add_question";
 	delete_question(intval($_POST['question_to_delete']));
 	$message[0] = 'alert';
-	$message[1] = "Frage gelöscht.";
+	$message[1] = "Frage ".intval($_POST['question_to_delete'])." gelöscht.";
     } elseif(isset($_POST['answer_to_delete'])) {
 	isset($_POST["active_tab"]) ? $_SESSION['activetab'] = $_POST["active_tab"] : $activetab = "#answers";
 	delete_answer(intval($_POST['answer_to_delete']));
 	$message[0] = 'alert';
-	$message[1] = "Antwort gelöscht.";
+	$message[1] = "Antwort ".intval($_POST['answer_to_delete'])." gelöscht.";
     } else {
 	$message = post_action();
     }
@@ -73,6 +73,7 @@
 
   </head>
   <body>
+  
   
     <script src="js/jquery-2.0.2.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -132,8 +133,7 @@
   <ul style="background-color: #eee;" class="nav nav-pills" id="navi">
     <li><a href="#player_management" data-toggle="tab">Spieler verwalten</a></li>
     <li><a href="#enter_results" data-toggle="tab">Ergebnisse eingeben</a></li>
-    <li><a href="#add_question" data-toggle="tab">Fragen verwalten</a></li>
-    <li><a href="#answers" data-toggle="tab">Antworten verwalten</a></li>
+    <li><a href="#add_question" data-toggle="tab">Fragen &amp; Antworten</a></li>
     <li><a href="#results" data-toggle="tab">Auswertung</a></li>
   </ul>
   
@@ -172,11 +172,9 @@
 		<legend>Spieler löschen</legend>
 		<label>Spieler wählen</label>
 		<div class="input-append">
-			<select name="name" size="1">
-				<?php 
-					html_output_list_of_players(get_first_player($game), $game);
-				?>
-			</select>
+			<?php 
+				html_dropdown_list_of_players(get_first_player($game), $game);
+			?>
 			<button type="submit" class="btn" name="action" value="remove_player">Löschen</button>
 		</div>
 		</fieldset>
@@ -193,12 +191,10 @@
 	
 	<form action="iws.php" name="load_user_round" id="load_user_round" method="post">
 	<div class="input-append">
-		<select name="name" id="player-round" size="1">
-			<?php 
-				html_output_list_of_players($player, $game);
-			?>
-			
-		</select>
+		
+		<?php 
+			html_dropdown_list_of_players($player, $game, "player-round");
+		?>
 		
 		<input type="hidden" name="active_tab" value="#enter_results">
 		<input type="hidden" name="round" value="<?php echo $round; ?>">
@@ -206,7 +202,7 @@
 	</div><br />
 	
 		<?php
-			html_output_round_questions_answers_by_player($round, $player, $game);
+			html_table_round_questions_answers_by_player($round, $player, $game);
 		?>
 	
 	</form>
@@ -216,16 +212,19 @@
   
 <!-- Frage hinzufügen -->
   <div class="tabcontent tab-pane" id="add_question">
-	<h2>Fragen in Runde <?php echo $round; ?></h2>
+	<h2>Fragen und Antworten in Runde <?php echo $round; ?></h2>
 	
-	<?php html_list_questions_of_round($round, $game); ?>
+	<?php 
+		//html_list_questions_of_round($round, $game); 
+		html_list_questions_with_answers($round, $game);
+	?>
 	
 	<form action="iws.php" name="add_question" method="post">
 		<input type="hidden" name="active_tab" value="#add_question">
 		<input type="hidden" name="round" value="<?php echo $round; ?>">
             <input type="hidden" name="player" value="<?php echo $player; ?>">
 		<div class="input-prepend input-append">
-                  <?php echo '<span class="add-on">Runde ' . $round . ', Frage ' . (get_max_question_of_round($round, $game)+1) . '</span>' ?>:
+                  <?php echo '<span class="add-on">Runde ' . $round . ', Frage ' . (get_no_of_questions($round, $game)+1) . '</span>' ?>:
                   <input name="questiontext" type="text" size="100" maxlength="1000" style="width:500px;">
                   <button name="action" value="add_question" class="btn" type="submit">hinzufügen</button>
             </div>
@@ -233,12 +232,12 @@
   </div>
 
 <!-- Liste der Antworten -->
-  <div class="tabcontent tab-pane" id="answers">
+  <!--<div class="tabcontent tab-pane" id="answers">
 	<h2>Antworten in Runde <?php echo $round; ?></h2>
 	
 	<?php html_list_answers_of_round($round, $game); ?>
 	
-  </div>
+  </div>-->
   
 <!-- Punkteübersicht -->
   <div class="tabcontent tab-pane" id="results">
@@ -255,19 +254,25 @@
 	<div style="background:white;" class="tab-content">
 		<div style="background:white;" class="tab-pane" id="res_current_round">
 			<h4>Ergebnisse der aktuellen Runde</h4>
-			<?php html_output_get_round($round, $game); ?>
+			<?php html_table_get_round($round, $game); ?>
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_for_answers_current_round">
 			<h4>Punkte für Antworten der aktuellen Runde</h4>
-			<?php html_output_round_answers_points($round, $game); ?>
+			<?php 
+				echo '<div class="pull-left span5">';
+				html_table_round_answers_points($round, $game);
+				echo '</div><div class="pull-left">';
+				html_bbcode_round_answers_points($round, $game);
+				echo '</div>';
+			?>
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_current_round">
 			<h4>Punktestand aktuelle Runde</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
-				html_output_round_player_points($round, $game);
+				html_table_round_player_points($round, $game);
 				echo '</div><div class="pull-left">';
 				html_bbcode_results_current_round($round, $game);
 				echo '</div>';
@@ -278,7 +283,7 @@
 			<h4>Punktestand insgesamt</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
-				html_output_sum_of_all_points($game);
+				html_table_sum_of_all_points($game);
 				echo '</div><div class="pull-left">';
 				html_bbcode_results($game);
 				echo '</div>';
@@ -321,6 +326,10 @@
 		$this.select();
 	});
 	$('#text_results_all').click(function() {
+		var $this = $(this);
+		$this.select();
+	});
+	$('#text_points_answers_round').click(function() {
 		var $this = $(this);
 		$this.select();
 	});

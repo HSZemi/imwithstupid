@@ -21,10 +21,10 @@
 	header("Location: index.php?err=1&user=".get_user_for_game($game)."&gameuser=".$_SESSION['user_id']);
     }
     
-    if(!isset($_POST['question_to_delete'])){
+    if(!isset($_GET['id'])){
 	header("Location: iws.php");
     } else {
-	$question_to_delete = $_POST['question_to_delete'];
+	$question_to_delete = intval($_GET['id']);
     }
     
     $_SESSION['activetab'] = '#add_question';
