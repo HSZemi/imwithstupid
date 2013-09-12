@@ -486,8 +486,22 @@ function html_list_of_games($user_id){
 	while($row = mysql_fetch_array($result)){
 		echo "<li><a href='iws.php?id=".$row['id']."'>".$row['name']."</a></li>\n";
 	}
+	mysql_free_result($result);
 	
 	echo '</ol>';
+}
+
+function html_userlist(){
+	echo "<ul>\n";
+	$query = "SELECT id, username FROM iwsUsers;";
+	$result = mysql_query($query) or die("html_userlist: Anfrage fehlgeschlagen: " . mysql_error());
+	
+	while($row = mysql_fetch_array($result)){
+		echo "<li>".$row['username']." (".$row['id'].") <button type='submit' name='delete_user' value='".$row['id']."'><i class='icon-trash'></i></button></li>\n";
+	}
+	mysql_free_result($result);
+	
+	echo "</ul>\n";
 }
 
 ?>
