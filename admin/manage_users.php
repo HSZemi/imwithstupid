@@ -9,7 +9,7 @@
             $pass = $_POST['pass'];
             
             if($user != '' and $pass != ''){
-			$db = db_connect();
+			$conn = db_connect();
 			$updated = create_or_update_user($user, $pass);
 			db_close($conn);
 		} else {
@@ -19,7 +19,7 @@
     }
     
     if(isset($_POST['delete_user'])){
-        $db = db_connect();
+        $conn = db_connect();
         $query = "DELETE FROM iwsUsers WHERE id = ".intval($_POST['delete_user']);
         $result = mysql_query($query);
         if(!$result){
@@ -86,7 +86,7 @@
             </div>
         </div>
         
-        <?php $db = db_connect(); html_userlist(); db_close($conn); ?>
+        <?php $conn = db_connect(); html_userlist(); db_close($conn); ?>
         
     </form>
     </div>
