@@ -3,17 +3,17 @@
 !defined("PASSSALT") ? define("PASSSALT", "9a158ed0cb479a75d0b0f83bb8508900") : '';
 
 // login: $user as string (username), $pass as string
-function user_login($user, $pass){
-    $user = mysql_real_escape_string($user);
-    $pass = mysql_real_escape_string($pass);
+function user_login($link, $user, $pass){
+    $user = mysqli_real_escape_string($link, $user);
+    $pass = mysqli_real_escape_string($link, $pass);
     
     $query = "SELECT ID, password FROM iwsUsers WHERE username LIKE '$user'";
-    $result = mysql_query($query) or die("user_login: Anfrage fehlgeschlagen: " . mysql_error());
-    if($row = mysql_fetch_array($result)){
+    $result = mysqli_query($link, $query) or die("user_login: Anfrage fehlgeschlagen: " . mysqli_error($link));
+    if($row = mysqli_fetch_array($result)){
 	$passwd_enc = $row['password'];
 	$user_id = $row['ID'];
 	
-	mysql_free_result($result);
+	mysqli_free_result($result);
     
 	if (CRYPT_MD5 == 1){
 		if(crypt($pass,"$1$".PASSSALT) != $passwd_enc){
@@ -26,20 +26,20 @@ function user_login($user, $pass){
 	}
     } else {
 	//nothing found
-	mysql_free_result($result);
+	mysqli_free_result($result);
 	return -1;
     }
 }
 
 
 // take user_id as string or int, return corresponding username as string
-function get_user_by_id($user_id){
+function get_user_by_id($link, $user_id){
     $user_id = intval($user_id);
     $query = "SELECT username FROM iwsUsers WHERE ID=$user_id";
-    $result = mysql_query($query) or die("get_user_by_id: Anfrage fehlgeschlagen: " . mysql_error());
-    if($row = mysql_fetch_array($result)){
+    $result = mysqli_query($link, $query) or die("get_user_by_id: Anfrage fehlgeschlagen: " . mysqli_error($link));
+    if($row = mysqli_fetch_array($result)){
 	$username = $row['username'];
-	mysql_free_result($result);
+	mysqli_free_result($result);
 	
 	return $username;
     } else {
@@ -48,13 +48,13 @@ function get_user_by_id($user_id){
 }
 
 // take username as string, return corresponding user id as int or -1 if none exists
-function get_id_of_user($username){
-    $username = mysql_real_escape_string($username);
+function get_id_of_user($link, $username){
+    $username = mysqli_real_escape_string($link, $username);
     $query = "SELECT ID FROM iwsUsers WHERE username LIKE '".$username."'";
-    $result = mysql_query($query) or die("get_id_of_user: Anfrage fehlgeschlagen: " . mysql_error());
-    if($row = mysql_fetch_array($result)){
+    $result = mysqli_query($link, $query) or die("get_id_of_user: Anfrage fehlgeschlagen: " . mysqli_error($link));
+    if($row = mysqli_fetch_array($result)){
 	$user_id = $row['ID'];
-	mysql_free_result($result);
+	mysqli_free_result($result);
     
 	return intval($user_id);
     } else {
@@ -63,23 +63,23 @@ function get_id_of_user($username){
 }
 
 // take username as string and password as string and make a user available with those credentials
-function create_or_update_user($user, $pass){
-    $user = mysql_real_escape_string($user);
-    $pass = mysql_real_escape_string($pass);
+function create_or_update_user($link, $user, $pass){
+    $user = mysqli_real_escape_string($link, $user);
+    $pass = mysqli_real_escape_string($link, $pass);
     
     if (CRYPT_MD5 == 1){
         $pass = crypt($pass,"$1$".PASSSALT);
         
-        $user_id = get_id_of_user($user);
+        $user_id = get_id_of_user($link, $user);
         
         if($user_id >= 0){
             $query = "UPDATE iwsUsers SET password='".$pass."' WHERE ID=$user_id;";
         } else {
             $query = "INSERT INTO iwsUsers(username, password) VALUES ('$user', '$pass');";
         }
-        $result = mysql_query($query);
+        $result = mysqli_query($link, $query);
         if(!$result){
-            echo "create_or_update_user: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+            echo "create_or_update_user: Anfrage fehlgeschlagen: " . mysqli_error($link) . "<br/>";
             return false;
         }
         return true;
@@ -91,13 +91,13 @@ function create_or_update_user($user, $pass){
 
 // take username as string and password as string and delete corresponding user if the
 // credentials are valid
-function delete_user($user, $pass){
-    if(user_login($user, $pass) > -1){
-        $user = mysql_real_escape_string($user);
+function delete_user($link, $user, $pass){
+    if(user_login($link, $user, $pass) > -1){
+        $user = mysqli_real_escape_string($link, $user);
         $query = "DELETE FROM iwsUsers WHERE username LIKE '".$user."'";
-        $result = mysql_query($query);
+        $result = mysqli_query($link, $query);
         if(!$result){
-            echo "delete_user: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+            echo "delete_user: Anfrage fehlgeschlagen: " . mysqli_error($link) . "<br/>";
             return false;
         }
         return true;

@@ -9,7 +9,7 @@ include '../lib/db.php';
 
 // mit Datenbank verbinden
 echo "Connect with database...";
-$conn = db_connect();
+$link = db_connect();
 echo " successful.<br/>\n";
 
 // ggf. alte Tabellen löschen
@@ -22,7 +22,7 @@ $query = "DROP TABLE IF EXISTS
 		iwsPlayers,
 		iwsGames,
 		iwsUsers;";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 echo " done.<br/>\n";
 
 // ggf. alte Views löschen
@@ -31,7 +31,7 @@ echo " done.<br/>\n";
 $query = "DROP VIEW IF EXISTS 
 		bigtable,
 		points_per_answer;";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 echo " done.<br/>\n";*/
 
 
@@ -47,7 +47,7 @@ $query = "CREATE TABLE iwsUsers (
 		
 		PRIMARY KEY (id)
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 echo "- Create table iwsGames<br/>\n";
 $query = "CREATE TABLE iwsGames ( 
@@ -58,7 +58,7 @@ $query = "CREATE TABLE iwsGames (
 		PRIMARY KEY (id),
 		FOREIGN KEY (user) REFERENCES iwsUsers(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 echo "- Create table iwsPlayer<br/>\n";
 $query = "CREATE TABLE iwsPlayers ( 
@@ -70,7 +70,7 @@ $query = "CREATE TABLE iwsPlayers (
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		UNIQUE (name, game)
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 /*echo "- Create table iwsRound<br/>\n";
 $query = "CREATE TABLE iwsRound ( 
@@ -81,7 +81,7 @@ $query = "CREATE TABLE iwsRound (
 		PRIMARY KEY (id),
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());*/
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));*/
 
 echo "- Create table iwsQuestion<br/>\n";
 $query = "CREATE TABLE iwsQuestion ( 
@@ -93,7 +93,7 @@ $query = "CREATE TABLE iwsQuestion (
 		PRIMARY KEY (id),
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 echo "- Create table iwsAnswer<br/>\n";
 $query = "CREATE TABLE iwsAnswer (
@@ -107,7 +107,7 @@ $query = "CREATE TABLE iwsAnswer (
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		UNIQUE (question, value)
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 echo "- Create table iwsAnswers<br/>\n";
 $query = "CREATE TABLE iwsAnswers (
@@ -122,34 +122,14 @@ $query = "CREATE TABLE iwsAnswers (
 		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
 		UNIQUE (player, answer)
 	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
+$result = mysqli_query($link, $query) or die("Anfrage fehlgeschlagen: " . mysql_error($link));
 
 
-// Views anlegen
-// noview
-/*echo "- Create view points_per_answer<br/>\n";
-$query = "CREATE VIEW points_per_answer AS (
-		SELECT iwsAnswers.answer AS answer_id, COUNT(iwsAnswers.player) AS points
-		FROM iwsAnswers
-		GROUP BY iwsAnswers.answer
-	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
-
-echo "- Create view bigtable<br/>\n";
-$query = "CREATE VIEW bigtable AS (
-		SELECT iwsPlayers.id AS player_id, iwsPlayers.name AS player_name,
-			iwsAnswers.id AS answers_id,
-			iwsAnswer.id AS answer_id, iwsAnswer.value AS answer_value,
-			iwsQuestion.id AS question_id, iwsQuestion.round AS round, iwsQuestion.number AS question_number, iwsQuestion.value AS question_value
-		FROM (iwsAnswers JOIN iwsPlayers ON iwsAnswers.player = iwsPlayers.id) 
-			JOIN (iwsAnswer JOIN iwsQuestion ON iwsAnswer.question = iwsQuestion.id) ON iwsAnswers.answer = iwsAnswer.id
-	);";
-$result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());*/
 echo "Creating tables done.<br/>\n";
 
 // Datenbankverbindung trennen
 echo "Closing connection<br/><br/>\n";
-db_close($conn);
+db_close($link);
 
 
 echo "Installation successful.<br/>\n";

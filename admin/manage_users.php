@@ -9,9 +9,9 @@
             $pass = $_POST['pass'];
             
             if($user != '' and $pass != ''){
-			$conn = db_connect();
-			$updated = create_or_update_user($user, $pass);
-			db_close($conn);
+			$link = db_connect();
+			$updated = create_or_update_user($link, $user, $pass);
+			db_close($link);
 		} else {
 			$updated = false;
 		}
@@ -19,16 +19,16 @@
     }
     
     if(isset($_POST['delete_user'])){
-        $conn = db_connect();
+        $link = db_connect();
         $query = "DELETE FROM iwsUsers WHERE id = ".intval($_POST['delete_user']);
-        $result = mysql_query($query);
+        $result = mysqli_query($link, $query);
         if(!$result){
-            echo "delete_user_x: Anfrage fehlgeschlagen: " . mysql_error() . "<br/>";
+            echo "delete_user_x: Anfrage fehlgeschlagen: " . mysql_error($link) . "<br/>";
             $deleted = false;
         } else {
 		$deleted = true;
         }
-        db_close($conn);
+        db_close($link);
     }
 ?>
 <!DOCTYPE HTML>
@@ -86,7 +86,7 @@
             </div>
         </div>
         
-        <?php $conn = db_connect(); html_userlist(); db_close($conn); ?>
+        <?php $link = db_connect(); html_userlist($link); db_close($link); ?>
         
     </form>
     </div>

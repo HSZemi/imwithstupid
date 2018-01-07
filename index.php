@@ -9,11 +9,11 @@
     include 'lib/html.php';
     
     if(isset($_POST['action']) and isset($_POST['name'])){
-	$handle = db_connect();
+	$link = db_connect();
 	if($_POST['name'] != ''){
-		add_game($_POST['name'], $_SESSION['user_id']);
+		add_game($link, $_POST['name'], $_SESSION['user_id']);
 	}
-	db_close($handle);
+	db_close($link);
     }
     
     if(isset($_GET['err']) and intval($_GET['err']) == 1){
@@ -49,9 +49,9 @@
     
     <h1>Spielübersicht</h1>
 	<?php 
-	$handle = db_connect();
-	html_list_of_games($_SESSION['user_id']);
-	db_close($handle);
+	$link = db_connect();
+	html_list_of_games($link, $_SESSION['user_id']);
+	db_close($link);
 	?>
 	<hr />
 	<form action="index.php" name="new_game" method="post" >

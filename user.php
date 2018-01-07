@@ -19,22 +19,22 @@
         
         if($user != "" and $pass != ""){
         
-            $conn = db_connect();
+            $link = db_connect();
 
             if (CRYPT_MD5 == 1){
                 if(isset($_POST['create_update'])){
-                    if(get_id_of_user($user) != $_SESSION['user_id']){
+                    if(get_id_of_user($link, $user) != $_SESSION['user_id']){
                         $user_privilegue_error = true;
                     } else {
-                        $updated = create_or_update_user($user, $pass);
+                        $updated = create_or_update_user($link, $user, $pass);
                     }
                 } elseif(isset($_POST['delete'])){
-                    $deleted = delete_user($user, $pass);
+                    $deleted = delete_user($link, $user, $pass);
                 }
             } else {
                 $md5_err = true;
             }
-            db_close($conn);
+            db_close($link);
         } else {
             $user_pass_problem = true;
         }

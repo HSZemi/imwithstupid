@@ -20,10 +20,10 @@
     $login_err = false;
     
     if($_SESSION['user']!= ""){
-    $conn = db_connect();
+    $link = db_connect();
 
     if (CRYPT_MD5 == 1){
-        $user_id = user_login($_SESSION['user'], $pass);
+        $user_id = user_login($link, $_SESSION['user'], $pass);
         if($user_id >= 0){
             /* User successfully logged in! */
             $_SESSION['user_id'] = $user_id;
@@ -32,7 +32,7 @@
             $_SESSION['activetab'] = "#enter_answers";
             
             header("Location: index.php?login=true");
-            db_close($conn);
+            db_close($link);
             die();
             
         } else {
@@ -41,7 +41,7 @@
     } else {
         $md5_err = true;
     }
-    db_close($conn);
+    db_close($link);
     }
 ?>
 <!DOCTYPE HTML>

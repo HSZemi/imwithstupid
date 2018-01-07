@@ -16,8 +16,8 @@
 	/* Select game if GET variable is set */
     if(isset($_GET['id'])){
 	$_SESSION['game_id'] = $_GET['id'];
-	$_SESSION['round'] = get_max_round($_SESSION['game_id']);
-	$_SESSION['player'] = get_first_player($_SESSION['game_id']);
+	$_SESSION['round'] = get_max_round($link, $_SESSION['game_id']);
+	$_SESSION['player'] = get_first_player($link, $_SESSION['game_id']);
     }
 
 	/* Error if no game selected */
@@ -30,8 +30,8 @@
     }
     
 	/* Error if user is not owner of selected game */
-    if(get_user_for_game($game) != $_SESSION['user_id']){
-	header("Location: index.php?err=1&user=".get_user_for_game($game)."&gameuser=".$_SESSION['user_id']);
+    if(get_user_for_game($link, $game) != $_SESSION['user_id']){
+	header("Location: index.php?err=1&user=".get_user_for_game($link, $game)."&gameuser=".$_SESSION['user_id']);
 	db_close($link);
 	die();
     }
@@ -56,7 +56,7 @@
 		$message[1] = "Runde " . $_SESSION['round'] . " wurde geladen.";
 		break;
 	case "start_new_round":
-		$_SESSION['round'] = max(get_max_round($game), $_SESSION['round'])+1;
+		$_SESSION['round'] = max(get_max_round($link, $game), $_SESSION['round'])+1;
 		$message[0] = 'alert alert-success';
 		$message[1] = "Runde " . $_SESSION['round'] . " wurde angelegt.";
 		break;
@@ -64,7 +64,7 @@
 	case "add_player":
 		$name = $_POST["player_name"];
 		if($name != ""){
-			create_player($name, $game);
+			create_player($link, $name, $game);
 			$message[0] = 'alert alert-success';
 			$message[1] = "Spieler " . $name . " hinzugefügt.";
 		} else {
@@ -75,7 +75,7 @@
 	case "remove_player":
 		$name = $_POST["player_name"];
 		if($name != ""){
-			remove_player($name, $game);
+			remove_player($link, $name, $game);
 			$message[0] = 'alert';
 			$message[1] = "Spieler " . $name . " entfernt.";
 		} else {
@@ -93,13 +93,13 @@
 		break;
 	case "save_answers_for_user_round":
 		$_SESSION['player'] = $_POST["player_name"];
-		$_SESSION['player_id'] = get_player_id($_SESSION['player'], $_SESSION['game_id']);
+		$_SESSION['player_id'] = get_player_id($link, $_SESSION['player'], $_SESSION['game_id']);
 
 		foreach($_POST as $key => $value){
 			if(substr($key, 0, 7) === 'answer_'){
 				$question_id = intval(substr($key, 7));
 				$answer = $value;
-				insert_answer($_SESSION['player_id'], $question_id, $answer, $_SESSION['game_id']);
+				insert_answer($link, $_SESSION['player_id'], $question_id, $answer, $_SESSION['game_id']);
 			}
 		}
 		$message[0] = 'alert alert-success';
@@ -107,20 +107,20 @@
 		break;
 	
 	case "delete_question":
-		delete_question(intval($_POST['question_to_delete']));
+		delete_question($link, intval($_POST['question_to_delete']));
 		$message[0] = 'alert';
 		$message[1] = "Frage ".intval($_POST['question_to_delete'])." gelöscht.";
 		break;
 	case "delete_answer":
-		delete_answer(intval($_POST['answer_to_delete']));
+		delete_answer($link, intval($_POST['answer_to_delete']));
 		$message[0] = 'alert';
 		$message[1] = "Antwort ".intval($_POST['answer_to_delete'])." gelöscht.";
 		break;
 	case "add_question":
 		$questiontext = $_POST["questiontext"];
-		$number = (get_no_of_questions($_SESSION['round'], $game)+1);
+		$number = (get_no_of_questions($link, $_SESSION['round'], $game)+1);
 		
-		create_question($_SESSION['round'], $questiontext, $game);
+		create_question($link, $_SESSION['round'], $questiontext, $game);
 		break;
     }
 
@@ -128,7 +128,7 @@
     if(isset($_SESSION['player']) and $_SESSION['player'] != ''){
 	$player = $_SESSION['player'];
     } else {
-	$player = get_first_player($game);
+	$player = get_first_player($link, $game);
     }
 	/* Variable for round number */
     $round = $_SESSION['round'];
@@ -157,18 +157,18 @@
 	<form action="iws.php" name="load_round" id="load_round" class="form-horizontal" method="post">
 		<input type="hidden" name="action" value="load_round">
 		<div class="control-group">
-		<h1><?php echo get_game_by_id($game); ?></h1>
+		<h1><?php echo get_game_by_id($link, $game); ?></h1>
 		<div class="input-prepend ">
 		 <span class="add-on">Runde:</span>
 		 <select id="roundselect" name="round_to_load">
 			<?php 
 				//muss gebastelt werden
 				$query = "SELECT DISTINCT round FROM iwsQuestion WHERE game=".intval($game)." ORDER BY round DESC";
-				$result = mysql_query($query) or die("build round numbers dropdown: Anfrage fehlgeschlagen: " . mysql_error());
+				$result = mysqli_query($link, $query) or die("build round numbers dropdown: Anfrage fehlgeschlagen: " . mysqli_error($link));
 				$found = false;
 				
 				// HTML output
-				while($row = mysql_fetch_array($result)){
+				while($row = mysqli_fetch_array($result)){
 					$number	= $row['round'];
 					
 					if($number == $round){
@@ -181,11 +181,11 @@
 				if(!$found){
 					echo "\t\t\t<option selected='selected'>" . $round . "</option>\n";
 				}
-				mysql_free_result($result);
+				mysqli_free_result($result);
 			?>
 		</select>
 		</div>
-		<button name="action" class="btn" value="start_new_round" type="submit"><?php echo "nächste Runde starten (" . (max(get_max_round($game), $round)+1) .")"; ?></button>
+		<button name="action" class="btn" value="start_new_round" type="submit"><?php echo "nächste Runde starten (" . (max(get_max_round($link, $game), $round)+1) .")"; ?></button>
 		</div>
 	</form>
 	
@@ -237,7 +237,7 @@
 			<label>Spieler wählen</label>
 			<div class="input-append">
 				<?php 
-					html_dropdown_list_of_players(get_first_player($game), $game);
+					html_dropdown_list_of_players($link, get_first_player($link, $game), $game);
 				?>
 				<button type="submit" class="btn" name="action" value="remove_player">Löschen</button>
 			</div>
@@ -258,7 +258,7 @@
 		<div class="input-append">
 			
 			<?php 
-				html_dropdown_list_of_players($player, $game, "player-round");
+				html_dropdown_list_of_players($link, $player, $game, "player-round");
 			?>
 			
 			<input type="hidden" name="active_tab" value="#enter_answers">
@@ -266,7 +266,7 @@
 		</div><br />
 		
 		<?php
-			html_table_round_questions_answers_by_player($round, $player, $game);
+			html_table_round_questions_answers_by_player($link, $round, $player, $game);
 		?>
 		
 	</form>
@@ -279,13 +279,13 @@
 	<h2>Fragen und Antworten in Runde <?php echo $round; ?></h2>
 	
 	<?php 
-		html_list_questions_with_answers($round, $game);
+		html_list_questions_with_answers($link, $round, $game);
 	?>
 	
 	<form action="iws.php" name="add_question" method="post">
 		<input type="hidden" name="active_tab" value="#questions_and_answers">
 		<div class="input-prepend input-append">
-                  <?php echo '<span class="add-on">Runde ' . $round . ', Frage ' . (get_no_of_questions($round, $game)+1) . '</span>' ?>:
+                  <?php echo '<span class="add-on">Runde ' . $round . ', Frage ' . (get_no_of_questions($link, $round, $game)+1) . '</span>' ?>:
                   <input name="questiontext" type="text" size="100" maxlength="1000" style="width:500px;">
                   <button name="action" value="add_question" class="btn" type="submit">hinzufügen</button>
             </div>
@@ -307,16 +307,16 @@
 	<div style="background:white;" class="tab-content">
 		<div style="background:white;" class="tab-pane" id="res_current_round">
 			<h4>Ergebnisse der aktuellen Runde</h4>
-			<?php html_table_get_round($round, $game); ?>
+			<?php html_table_get_round($link, $round, $game); ?>
 		</div>
 		
 		<div style="background:white;" class="tab-pane" id="points_for_answers_current_round">
 			<h4>Punkte für Antworten der aktuellen Runde</h4>
 			<?php 
 				echo '<div class="pull-left span5">';
-				html_table_round_answers_points($round, $game);
+				html_table_round_answers_points($link, $round, $game);
 				echo '</div><div class="pull-left">';
-				html_bbcode_round_answers_points($round, $game);
+				html_bbcode_round_answers_points($link, $round, $game);
 				echo '</div>';
 			?>
 		</div>
@@ -325,9 +325,9 @@
 			<h4>Punktestand aktuelle Runde</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
-				html_table_round_player_points($round, $game);
+				html_table_round_player_points($link, $round, $game);
 				echo '</div><div class="pull-left">';
-				html_bbcode_results_current_round($round, $game);
+				html_bbcode_results_current_round($link, $round, $game);
 				echo '</div>';
 			?>
 		</div>
@@ -336,9 +336,9 @@
 			<h4>Punktestand insgesamt</h4>
 			<?php 
 				echo '<div class="pull-left span4">';
-				html_table_sum_of_all_points($game);
+				html_table_sum_of_all_points($link, $game);
 				echo '</div><div class="pull-left">';
-				html_bbcode_results($game);
+				html_bbcode_results($link, $game);
 				echo '</div>';
 			?>
 		</div>
