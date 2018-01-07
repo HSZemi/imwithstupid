@@ -6,8 +6,7 @@
  * change the gamestate, for example by modifying players or rounds.
  */
  
- define("USER", "iws");
- define("PASS", "iws");
+include "dbconfig.php";
 
 
 function db_connect(){
@@ -16,7 +15,7 @@ function db_connect(){
 	or die("Keine Verbindung möglich: " . mysqli_error($link));
 // 	echo "Verbindung zum Datenbankserver erfolgreich<br/>";
 
-	mysqli_select_db($link, "iwstest") or die("Auswahl der Datenbank fehlgeschlagen</br>");
+	mysqli_select_db($link, DATABASE) or die("Auswahl der Datenbank fehlgeschlagen</br>");
 	return $link;
 }
 
