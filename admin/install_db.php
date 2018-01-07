@@ -91,7 +91,7 @@ $query = "CREATE TABLE iwsQuestion (
 		game		int,
 		
 		PRIMARY KEY (id),
-		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE,
+		FOREIGN KEY (game) REFERENCES iwsGames(id) ON DELETE CASCADE ON UPDATE CASCADE
 	);";
 $result = mysql_query($query) or die("Anfrage fehlgeschlagen: " . mysql_error());
 

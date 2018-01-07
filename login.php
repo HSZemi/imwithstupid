@@ -32,6 +32,8 @@
             $_SESSION['activetab'] = "#enter_answers";
             
             header("Location: index.php?login=true");
+            db_close($conn);
+            die();
             
         } else {
             $login_err = true;

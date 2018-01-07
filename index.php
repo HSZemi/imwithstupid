@@ -3,6 +3,7 @@
 
     if(!isset($_SESSION['user_id']) or $_SESSION['user_id'] < 0){
         header("Location: login.php");
+        die();
     }
     include 'lib/db.php';
     include 'lib/html.php';

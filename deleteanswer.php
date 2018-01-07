@@ -4,25 +4,31 @@
     include 'lib/db.php';
     include 'lib/html.php';
     include 'lib/action.php';
-    
-    $link = db_connect();
 
     if(!isset($_SESSION['user_id']) or $_SESSION['user_id'] < 0){
         header("Location: login.php");
+        die();
     }
     
     if(!isset($_SESSION['game_id'])){
 	header("Location: index.php");
+	die();
     } else {
 	$game = $_SESSION['game_id'];
     }
     
+    $link = db_connect();
+    
     if(get_user_for_game($game) != $_SESSION['user_id']){
 	header("Location: index.php?err=1&user=".get_user_for_game($game)."&gameuser=".$_SESSION['user_id']);
+	db_close($link);
+	die();
     }
     
     if(!isset($_POST['answer_to_delete'])){
 	header("Location: iws.php");
+	db_close($link);
+	die();
     } else {
 	$answer_to_delete = $_POST['answer_to_delete'];
     }
@@ -62,6 +68,6 @@
     
     </div>
 
-  
+  <?php db_close($link); ?>
   </body>
 </html>
